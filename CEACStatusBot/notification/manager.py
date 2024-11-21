@@ -1,6 +1,7 @@
 from .handle import NotificationHandle
 from CEACStatusBot.request import query_status
 from CEACStatusBot.captcha import CaptchaHandle,OnnxCaptchaHandle
+import os,pytz,datetime
 
 class NotificationManager():
     def __init__(self,location:str,number:str,passport_number:str,surname:str,captchaHandle:CaptchaHandle=OnnxCaptchaHandle("captcha.onnx")) -> None:
@@ -17,25 +18,24 @@ class NotificationManager():
     def send(self,) -> None:
         res = query_status(self.__location, self.__number, self.__passport_number, self.__surname, self.__captchaHandle)
 
-        if res['status'] == "Refused":
-            import os,pytz,datetime
-            try:
-                TIMEZONE = os.environ["TIMEZONE"]
-                localTimeZone = pytz.timezone(TIMEZONE)
-                localTime = datetime.datetime.now(localTimeZone)
-            except pytz.exceptions.UnknownTimeZoneError:
-                print("UNKNOWN TIMEZONE Error, use default")
-                localTime = datetime.datetime.now()
-            except KeyError:
-                print("TIMEZONE Error")
-                localTime = datetime.datetime.now()
+        # if res['status'] == "Refused":
+        try:
+            TIMEZONE = os.environ["TIMEZONE"]
+            localTimeZone = pytz.timezone(TIMEZONE)
+            localTime = datetime.datetime.now(localTimeZone)
+        except pytz.exceptions.UnknownTimeZoneError:
+            print("UNKNOWN TIMEZONE Error, use default")
+            localTime = datetime.datetime.now()
+        except KeyError:
+            print("TIMEZONE Error")
+            localTime = datetime.datetime.now()
 
-            if localTime.hour < 8 or localTime.hour > 22:
-                print("In Manager, no disturbing time")
-                return
-            if localTime.minute > 30:
-                print("In Manager, no disturbing time")
-                return
+        if localTime.hour < 8 or localTime.hour > 19:
+            print("In Manager, no disturbing time")
+            return
+        if localTime.minute > 30:
+            print("In Manager, no disturbing time")
+            return
 
         for notificationHandle in self.__handleList:
             notificationHandle.send(res)
