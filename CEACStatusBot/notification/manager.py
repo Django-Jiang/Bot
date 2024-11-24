@@ -31,7 +31,10 @@ class NotificationManager():
             localTime = datetime.datetime.now()
 
         if localTime.hour < 8 or localTime.hour > 19:
-            print("In Manager, no disturbing time")
+            print("Not working hour")
+            return
+        if localTime.weekday() >= 5:
+            print("In weekend")
             return
 
         for notificationHandle in self.__handleList:
